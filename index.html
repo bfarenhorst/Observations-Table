@@ -195,6 +195,7 @@
                 <button id="pauseBtn" class="btn-pause" onclick="togglePause()" style="display: none;">⏸️ Pause</button>
                 <button id="backBtn" class="btn-back" onclick="goBackQuestion()" style="display: none;">⬅️ Go Back</button>
                 <button id="repeatBtn" class="btn-stop" onclick="repeatQuestion()" style="display: none;">🔄 Repeat</button>
+                <button id="nextBtn" class="btn-start" onclick="manualNext()" style="display: none;">➡️ Next Question</button>
                 <button id="skipBtn" class="btn-skip" onclick="skipQuestion()" style="display: none;">⏭️ Skip</button>
                 <button id="newRowBtn" class="btn-start" onclick="startNewRow()" style="display: none;">➕ New Row</button>
                 <button id="voiceToggleBtn" class="btn-clear" onclick="toggleVoicePrompts()">🔊 Voice: ON</button>
@@ -271,6 +272,7 @@
         let useVoicePrompts = true;
         let speechSynthesis = window.speechSynthesis;
         let autoSaveEnabled = true;
+        let autoAdvance = false; // Changed to false - manual by default
 
         const questions = [
             { field: 'floor', question: 'What floor are you on?', hint: 'Example: "1", "2", "basement", "ground floor"' },
@@ -807,11 +809,22 @@
             // Autosave after each answer
             autoSave();
             
+            // Don't auto-advance - wait for manual Next button click
+            // User must click "Next Question" button to continue
+        }
+
+        function manualNext() {
+            // Stop listening
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Move to next question
             currentQuestion++;
             
             setTimeout(() => {
                 askQuestion();
-            }, 1000);
+            }, 500);
         }
 
         function askAnotherRoom() {
@@ -888,6 +901,7 @@
                 document.getElementById('pauseBtn').style.display = 'inline-block';
                 document.getElementById('skipBtn').style.display = 'inline-block';
                 document.getElementById('newRowBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'inline-block';
                 
                 // Show back button only if not on first question
                 if (currentQuestion > 0) {
@@ -904,6 +918,7 @@
                 document.getElementById('skipBtn').style.display = 'none';
                 document.getElementById('backBtn').style.display = 'none';
                 document.getElementById('newRowBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'none';
             }
         }
 
