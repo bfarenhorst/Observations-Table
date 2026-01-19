@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appendix B - Observations Table</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 { color: #1f2937; margin-bottom: 15px; }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-start { background: #3b82f6; color: white; }
+        .btn-start:hover { background: #2563eb; }
+        .btn-stop { background: #ef4444; color: white; }
+        .btn-stop:hover { background: #dc2626; }
+        .btn-export { background: #6366f1; color: white; }
+        .btn-export:hover { background: #4f46e5; }
+        .btn-clear { background: #e5e7eb; color: #374151; }
+        .btn-clear:hover { background: #d1d5db; }
+        .prompt-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: white;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .prompt-question {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .prompt-hint {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .listening-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .pulse {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .transcript-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #e5e7eb;
+        }
+        .transcript-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .transcript-text {
+            font-size: 16px;
+            color: #1f2937;
+            min-height: 30px;
+        }
+        .progress-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+        }
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f3f4f6;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #d1d5db;
+            font-size: 14px;
+        }
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        tr.active {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+        .status-message {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            color: #166534;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #fca5a5;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        .waiting-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .waiting-state h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Appendix B - Observations Table</h1>
+            
+            <div class="controls">
+                <button id="toggleBtn" class="btn-start" onclick="startInterview()">🎤 Start Interview</button>
+                <button id="pauseBtn" class="btn-pause" onclick="togglePause()" style="display: none;">⏸️ Pause</button>
+                <button id="backBtn" class="btn-back" onclick="goBackQuestion()" style="display: none;">⬅️ Go Back</button>
+                <button id="repeatBtn" class="btn-stop" onclick="repeatQuestion()" style="display: none;">🔄 Repeat</button>
+                <button id="nextBtn" class="btn-start" onclick="manualNext()" style="display: none;">➡️ Next Question</button>
+                <button id="skipBtn" class="btn-skip" onclick="skipQuestion()" style="display: none;">⏭️ Skip</button>
+                <button id="newRowBtn" class="btn-start" onclick="startNewRow()" style="display: none;">➕ New Row</button>
+                <button id="voiceToggleBtn" class="btn-clear" onclick="toggleVoicePrompts()">🔊 Voice: ON</button>
+                <button class="btn-start" onclick="saveData()">💾 Save Progress</button>
+                <button class="btn-export" onclick="loadData()">📂 Load Saved</button>
+                <button class="btn-export" onclick="exportCSV()">📥 Export CSV</button>
+                <button id="downloadBtn" class="btn-start" onclick="downloadCSV()" style="display: none;">💾 Download Results</button>
+                <button class="btn-clear" onclick="clearAll()">Clear All</button>
+            </div>
+
+            <div id="statusMessage"></div>
+
+            <div id="promptContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+
+                <div class="prompt-box">
+                    <div class="prompt-question" id="promptQuestion">Ready to start...</div>
+                    <div class="prompt-hint" id="promptHint"></div>
+                    <div id="speakingIndicator" style="display: none; margin-top: 10px; color: #fbbf24;">
+                        🔊 Speaking question...
+                    </div>
+                    <div class="listening-indicator" id="listeningIndicator" style="display: none;">
+                        <div class="pulse"></div>
+                        <span id="listeningText">🎤 Listening...</span>
+                    </div>
+                </div>
+
+                <div class="transcript-box">
+                    <div class="transcript-label">You said:</div>
+                    <div class="transcript-text" id="transcript">Waiting for your response...</div>
+                </div>
+            </div>
+
+            <div id="waitingState" class="waiting-state">
+                <h2>👆 Click "Start Interview" to begin</h2>
+                <p>I'll guide you through each field step by step</p>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="observationsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;">#</th>
+                        <th style="width: 80px;">Floor</th>
+                        <th style="width: 80px;">Area</th>
+                        <th style="width: 120px;">Room</th>
+                        <th style="width: 150px;">Ceilings</th>
+                        <th style="width: 150px;">Walls</th>
+                        <th style="width: 150px;">Floors</th>
+                        <th style="width: 100px;">Samples</th>
+                        <th style="width: 150px;">Mercury Fluorescent Lights</th>
+                        <th style="width: 200px;">Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let observations = [];
+        let currentRow = 0;
+        let currentQuestion = 0;
+        let currentTranscript = '';
+        let interviewActive = false;
+        let isPaused = false;
+        let useVoicePrompts = true;
+        let speechSynthesis = window.speechSynthesis;
+        let autoSaveEnabled = true;
+        let autoAdvance = false; // Changed to false - manual by default
+
+        const questions = [
+            { field: 'floor', question: 'What floor are you on?', hint: 'Example: "1", "2", "basement", "ground floor"' },
+            { field: 'area', question: 'What area or section?', hint: 'Example: "A", "B", "North Wing"' },
+            { field: 'room', question: 'What room is this?', hint: 'Example: "Kitchen", "Bedroom 1", "Bathroom"' },
+            { field: 'ceilings', question: 'Describe the ceiling condition', hint: 'Example: "Good condition", "Water damaged", "Cracked"' },
+            { field: 'walls', question: 'Describe the walls', hint: 'Example: "Painted white", "Wallpaper peeling", "Good condition"' },
+            { field: 'floors', question: 'What type of flooring?', hint: 'Example: "Hardwood", "Tile", "Carpet", "Vinyl"' },
+            { field: 'samples', question: 'Were samples collected?', hint: 'Say: "Yes", "No", or describe what was collected' },
+            { field: 'mfl', question: 'Any mercury fluorescent lights?', hint: 'Example: "Yes", "No", "2 fixtures", "Present"' },
+            { field: 'notes', question: 'Any additional notes?', hint: 'Any other observations or details' }
+        ];
+
+        function init() {
+            setupSpeechRecognition();
+            loadAutoSave(); // Try to load any autosaved data
+            renderTable();
+        }
+
+        function autoSave() {
+            if (!autoSaveEnabled || observations.length === 0) return;
+            
+            try {
+                const saveData = {
+                    observations: observations,
+                    currentRow: currentRow,
+                    currentQuestion: currentQuestion,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('observations_autosave', JSON.stringify(saveData));
+                console.log('Data autosaved');
+            } catch (error) {
+                console.error('Autosave failed:', error);
+            }
+        }
+
+        function loadAutoSave() {
+            try {
+                const saved = localStorage.getItem('observations_autosave');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (confirm('Found autosaved data from ' + new Date(data.timestamp).toLocaleString() + '. Load it?')) {
+                        observations = data.observations;
+                        currentRow = data.currentRow;
+                        currentQuestion = data.currentQuestion;
+                        renderTable();
+                        showSuccess('Autosaved data loaded');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading autosave:', error);
+            }
+        }
+
+        function saveData() {
+            if (observations.length === 0) {
+                alert('No data to save. Please start an interview first.');
+                return;
+            }
+
+            // Prompt for save name
+            const saveName = prompt('Enter a name for this save file:', 'Inspection_' + new Date().toISOString().slice(0, 10));
+            
+            if (!saveName) {
+                // User cancelled
+                return;
+            }
+            
+            // Sanitize filename (remove invalid characters)
+            const cleanName = saveName.replace(/[^a-z0-9_-]/gi, '_');
+
+            try {
+                const saveData = {
+                    saveName: saveName,
+                    observations: observations,
+                    currentRow: currentRow,
+                    currentQuestion: currentQuestion,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Save to localStorage with custom name
+                const storageKey = 'observations_save_' + cleanName;
+                localStorage.setItem(storageKey, JSON.stringify(saveData));
+                
+                // Also save a list of all save names
+                let savesList = [];
+                try {
+                    const savedList = localStorage.getItem('observations_saves_list');
+                    if (savedList) {
+                        savesList = JSON.parse(savedList);
+                    }
+                } catch (e) {}
+                
+                // Add this save to the list if not already there
+                if (!savesList.find(s => s.key === storageKey)) {
+                    savesList.push({
+                        key: storageKey,
+                        name: saveName,
+                        timestamp: saveData.timestamp,
+                        roomCount: observations.length
+                    });
+                    localStorage.setItem('observations_saves_list', JSON.stringify(savesList));
+                }
+                
+                // Also download as JSON file
+                const dataStr = JSON.stringify(saveData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = cleanName + '.json';
+                a.click();
+                
+                showSuccess('✅ "' + saveName + '" saved successfully! (Browser + Downloaded file)');
+            } catch (error) {
+                alert('Error saving data: ' + error.message);
+            }
+        }
+
+        function loadData() {
+            // Check if there are saved files in browser
+            let savesList = [];
+            try {
+                const savedList = localStorage.getItem('observations_saves_list');
+                if (savedList) {
+                    savesList = JSON.parse(savedList);
+                }
+            } catch (e) {}
+            
+            if (savesList.length > 0) {
+                // Show option to load from browser or file
+                const choice = confirm(
+                    'You have ' + savesList.length + ' saved interview(s) in your browser.\n\n' +
+                    'Click OK to see your saved interviews\n' +
+                    'Click Cancel to load from a file instead'
+                );
+                
+                if (choice) {
+                    showSavedInterviews(savesList);
+                    return;
+                }
+            }
+            
+            // Load from file
+            loadFromFile();
+        }
+
+        function showSavedInterviews(savesList) {
+            // Create a selection dialog
+            let message = 'Select an interview to load:\n\n';
+            savesList.forEach((save, index) => {
+                const date = new Date(save.timestamp).toLocaleString();
+                message += (index + 1) + '. ' + save.name + ' (' + save.roomCount + ' rooms) - ' + date + '\n';
+            });
+            message += '\nOr click Cancel to load from a file';
+            
+            const selection = prompt(message + '\n\nEnter number (1-' + savesList.length + '):');
+            
+            if (!selection) {
+                // User cancelled, offer to load from file
+                if (confirm('Load from a file instead?')) {
+                    loadFromFile();
+                }
+                return;
+            }
+            
+            const index = parseInt(selection) - 1;
+            if (index >= 0 && index < savesList.length) {
+                const save = savesList[index];
+                try {
+                    const savedData = localStorage.getItem(save.key);
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        observations = data.observations;
+                        currentRow = data.currentRow || 0;
+                        currentQuestion = data.currentQuestion || 0;
+                        renderTable();
+                        showSuccess('Loaded "' + save.name + '" successfully!');
+                    } else {
+                        alert('Error: Save file not found');
+                    }
+                } catch (error) {
+                    alert('Error loading save: ' + error.message);
+                }
+            } else {
+                alert('Invalid selection');
+            }
+        }
+
+        function loadFromFile() {
+            // Create a file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        observations = data.observations;
+                        currentRow = data.currentRow || 0;
+                        currentQuestion = data.currentQuestion || 0;
+                        renderTable();
+                        
+                        const fileName = data.saveName || file.name.replace('.json', '');
+                        showSuccess('Loaded "' + fileName + '" from file successfully!');
+                    } catch (error) {
+                        alert('Error loading file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        function setupSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    currentTranscript = transcript;
+                    document.getElementById('transcript').textContent = transcript;
+                    
+                    setTimeout(() => {
+                        processAnswer(transcript);
+                    }, 500);
+                };
+
+                recognition.onerror = function(event) {
+                    console.log('Speech recognition error:', event.error);
+                    
+                    if (event.error === 'not-allowed') {
+                        showError('Microphone access denied. Please allow microphone access and refresh the page.');
+                        interviewActive = false;
+                        updateUI();
+                    } else if (event.error === 'no-speech') {
+                        // User didn't speak in time, try again
+                        showError('No speech detected. Please speak clearly. Trying again...');
+                        setTimeout(() => {
+                            if (interviewActive) {
+                                document.getElementById('statusMessage').style.display = 'none';
+                                startListening();
+                            }
+                        }, 2000);
+                    } else if (event.error === 'aborted') {
+                        // Recognition was aborted, restart if still in interview
+                        if (interviewActive) {
+                            setTimeout(() => {
+                                startListening();
+                            }, 500);
+                        }
+                    } else {
+                        showError('Error: ' + event.error + ' - Click to try again');
+                        setTimeout(() => {
+                            if (interviewActive) {
+                                document.getElementById('statusMessage').style.display = 'none';
+                                startListening();
+                            }
+                        }, 2000);
+                    }
+                };
+
+                recognition.onend = function() {
+                    document.getElementById('listeningIndicator').style.display = 'none';
+                };
+            } else {
+                showError('Speech recognition not supported. Please use Chrome or Edge browser.');
+            }
+        }
+
+        function startInterview() {
+            if (!recognition) {
+                alert('Speech recognition not available. Please use Chrome or Edge browser.');
+                return;
+            }
+
+            interviewActive = true;
+            currentQuestion = 0;
+            
+            // Create new observation row
+            observations.push({
+                floor: '', area: '', room: '', ceilings: '', walls: '',
+                floors: '', samples: '', mfl: '', notes: ''
+            });
+            currentRow = observations.length - 1;
+            
+            renderTable();
+            updateUI();
+            askQuestion();
+        }
+
+        function askQuestion() {
+            if (currentQuestion >= questions.length) {
+                askAnotherRoom();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('promptQuestion').textContent = q.question;
+            document.getElementById('promptHint').textContent = q.hint;
+            document.getElementById('transcript').textContent = 'Waiting for your response...';
+            
+            // Update button visibility
+            updateUI();
+            
+            updateProgress();
+            
+            // Only speak and wait if voice prompts are enabled
+            if (useVoicePrompts) {
+                // Speak the question
+                speakText(q.question);
+                
+                // Wait for speech to finish before starting recognition
+                setTimeout(() => {
+                    startListening();
+                }, 1500);
+            } else {
+                // Voice OFF - start listening immediately
+                startListening();
+            }
+        }
+
+        function repeatQuestion() {
+            // Stop current recognition
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Stop any speech
+            speechSynthesis.cancel();
+            
+            // Clear the current answer
+            const q = questions[currentQuestion];
+            const obs = observations[currentRow];
+            obs[q.field] = '';
+            
+            renderTable();
+            
+            // Ask the question again
+            showSuccess('Repeating question...');
+            setTimeout(() => {
+                document.getElementById('statusMessage').style.display = 'none';
+                askQuestion();
+            }, 1000);
+        }
+
+        function speakText(text) {
+            if (!useVoicePrompts) return;
+            
+            // Show speaking indicator
+            document.getElementById('speakingIndicator').style.display = 'block';
+            document.getElementById('listeningIndicator').style.display = 'none';
+            
+            // Cancel any ongoing speech
+            speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 0.9; // Slightly slower for clarity
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            utterance.onend = function() {
+                // Hide speaking indicator when done
+                document.getElementById('speakingIndicator').style.display = 'none';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        function toggleVoicePrompts() {
+            useVoicePrompts = !useVoicePrompts;
+            const btn = document.getElementById('voiceToggleBtn');
+            
+            if (useVoicePrompts) {
+                btn.textContent = '🔊 Voice: ON';
+                showSuccess('Voice prompts enabled');
+            } else {
+                btn.textContent = '🔇 Voice: OFF';
+                speechSynthesis.cancel(); // Stop any current speech
+                showSuccess('Voice prompts disabled');
+            }
+        }
+
+        function skipQuestion() {
+            // Stop current recognition
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Stop any speech
+            speechSynthesis.cancel();
+            
+            // Leave current answer blank and move to next
+            showSuccess('Question skipped');
+            
+            currentQuestion++;
+            
+            setTimeout(() => {
+                document.getElementById('statusMessage').style.display = 'none';
+                askQuestion();
+            }, 1000);
+        }
+
+        function startNewRow() {
+            // Stop current recognition
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Stop any speech
+            speechSynthesis.cancel();
+            
+            // Create new observation row
+            observations.push({
+                floor: '', area: '', room: '', ceilings: '', walls: '',
+                floors: '', samples: '', mfl: '', notes: ''
+            });
+            currentRow = observations.length - 1;
+            currentQuestion = 0;
+            
+            renderTable();
+            autoSave();
+            
+            showSuccess('Starting new row...');
+            
+            if (useVoicePrompts) {
+                speakText('Starting new room');
+            }
+            
+            setTimeout(() => {
+                document.getElementById('statusMessage').style.display = 'none';
+                askQuestion();
+            }, 1500);
+        }
+
+        function goBackQuestion() {
+            // Stop current recognition
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Stop any speech
+            speechSynthesis.cancel();
+            
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showSuccess('Going back to previous question...');
+                
+                setTimeout(() => {
+                    document.getElementById('statusMessage').style.display = 'none';
+                    // askQuestion() will speak the question if voice is ON
+                    askQuestion();
+                }, 1000);
+            } else {
+                showError('Already at the first question');
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            
+            if (isPaused) {
+                // Stop listening
+                try {
+                    recognition.stop();
+                } catch (e) {}
+                
+                // Stop any speech
+                speechSynthesis.cancel();
+                
+                pauseBtn.textContent = '▶️ Resume';
+                pauseBtn.className = 'btn-start';
+                document.getElementById('listeningIndicator').style.display = 'none';
+                document.getElementById('speakingIndicator').style.display = 'none';
+                showSuccess('Interview paused. Click Resume when ready.');
+            } else {
+                // Resume
+                pauseBtn.textContent = '⏸️ Pause';
+                pauseBtn.className = 'btn-pause';
+                showSuccess('Resuming...');
+                
+                setTimeout(() => {
+                    document.getElementById('statusMessage').style.display = 'none';
+                    
+                    // Repeat the current question
+                    if (currentQuestion < questions.length) {
+                        const q = questions[currentQuestion];
+                        speakText(q.question);
+                        
+                        // Wait for speech to finish before starting to listen
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500);
+                    } else {
+                        // If on "another room" question
+                        speakText('Is there another room to document?');
+                        setTimeout(() => {
+                            startListening();
+                        }, 1500);
+                    }
+                }, 1000);
+            }
+        }
+
+        function startListening() {
+            if (isPaused) return; // Don't start if paused
+            
+            try {
+                isListening = true;
+                
+                // Update listening text based on voice prompt setting
+                const listeningTextElement = document.getElementById('listeningText');
+                if (useVoicePrompts) {
+                    listeningTextElement.textContent = '🎤 Now listening for your answer...';
+                } else {
+                    listeningTextElement.textContent = '🎤 Listening...';
+                }
+                
+                document.getElementById('listeningIndicator').style.display = 'flex';
+                recognition.start();
+            } catch (error) {
+                console.log('Error starting recognition:', error);
+                // Recognition might already be running, just ignore
+            }
+        }
+
+        function processAnswer(answer) {
+            if (currentQuestion >= questions.length) return;
+
+            const q = questions[currentQuestion];
+            const obs = observations[currentRow];
+            
+            obs[q.field] = answer.trim();
+            
+            showSuccess(`✓ ${q.field}: "${answer}"`);
+            
+            renderTable();
+            
+            // Autosave after each answer
+            autoSave();
+            
+            // Don't auto-advance - wait for manual Next button click
+            // User must click "Next Question" button to continue
+        }
+
+        function manualNext() {
+            // Stop listening
+            try {
+                recognition.stop();
+            } catch (e) {}
+            
+            // Stop any current speech
+            speechSynthesis.cancel();
+            
+            // Move to next question
+            currentQuestion++;
+            
+            setTimeout(() => {
+                askQuestion();
+            }, 500);
+        }
+
+        function askAnotherRoom() {
+            document.getElementById('promptQuestion').textContent = 'Is there another room to document?';
+            document.getElementById('promptHint').textContent = 'Say "Yes" to continue or "No" to finish';
+            document.getElementById('transcript').textContent = 'Waiting for your response...';
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                currentTranscript = transcript;
+                document.getElementById('transcript').textContent = transcript;
+                
+                setTimeout(() => {
+                    if (transcript.includes('yes')) {
+                        currentQuestion = 0;
+                        observations.push({
+                            floor: '', area: '', room: '', ceilings: '', walls: '',
+                            floors: '', samples: '', mfl: '', notes: ''
+                        });
+                        currentRow = observations.length - 1;
+                        renderTable();
+                        
+                        showSuccess('Starting new room...');
+                        if (useVoicePrompts) {
+                            speakText('Starting new room');
+                        }
+                        setTimeout(() => {
+                            setupSpeechRecognition();
+                            askQuestion();
+                        }, useVoicePrompts ? 2000 : 500);
+                    } else {
+                        finishInterview();
+                    }
+                }, 500);
+            };
+            
+            // Only speak and wait if voice prompts are enabled
+            if (useVoicePrompts) {
+                speakText('Is there another room to document?');
+                setTimeout(() => {
+                    startListening();
+                }, 1500);
+            } else {
+                // Voice OFF - start listening immediately
+                startListening();
+            }
+        }
+
+        function finishInterview() {
+            interviewActive = false;
+            isListening = false;
+            
+            // Stop any speech
+            speechSynthesis.cancel();
+            
+            document.getElementById('promptContainer').style.display = 'none';
+            document.getElementById('waitingState').style.display = 'block';
+            document.getElementById('waitingState').innerHTML = 
+                '<h2>✅ Interview Complete!</h2><p>' + observations.length + ' room(s) documented. Click "Download Results" to save your CSV file.</p>';
+            
+            // Show download button
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            document.getElementById('toggleBtn').style.display = 'inline-block';
+            
+            showSuccess('Interview completed! ' + observations.length + ' room(s) documented.');
+            speakText('Interview complete. You documented ' + observations.length + ' rooms.');
+        }
+
+        function updateProgress() {
+            const progress = (currentQuestion / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function updateUI() {
+            if (interviewActive) {
+                document.getElementById('promptContainer').style.display = 'block';
+                document.getElementById('waitingState').style.display = 'none';
+                document.getElementById('toggleBtn').style.display = 'none';
+                document.getElementById('repeatBtn').style.display = 'inline-block';
+                document.getElementById('pauseBtn').style.display = 'inline-block';
+                document.getElementById('skipBtn').style.display = 'inline-block';
+                document.getElementById('newRowBtn').style.display = 'inline-block';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+                
+                // Show back button only if not on first question
+                if (currentQuestion > 0) {
+                    document.getElementById('backBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('backBtn').style.display = 'none';
+                }
+            } else {
+                document.getElementById('promptContainer').style.display = 'none';
+                document.getElementById('waitingState').style.display = 'block';
+                document.getElementById('toggleBtn').style.display = 'inline-block';
+                document.getElementById('repeatBtn').style.display = 'none';
+                document.getElementById('pauseBtn').style.display = 'none';
+                document.getElementById('skipBtn').style.display = 'none';
+                document.getElementById('backBtn').style.display = 'none';
+                document.getElementById('newRowBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function showError(message) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = 'error-message';
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (observations.length === 0) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 10;
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = '#6b7280';
+                cell.textContent = 'No observations yet. Click "Start Interview" to begin.';
+                return;
+            }
+
+            observations.forEach((obs, index) => {
+                const row = tbody.insertRow();
+                row.className = index === currentRow ? 'active' : '';
+
+                row.insertCell().textContent = index + 1;
+                
+                ['floor', 'area', 'room', 'ceilings', 'walls', 'floors', 'samples', 'mfl'].forEach(field => {
+                    const cell = row.insertCell();
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = obs[field];
+                    input.onchange = (e) => {
+                        obs[field] = e.target.value;
+                    };
+                    cell.appendChild(input);
+                });
+
+                const notesCell = row.insertCell();
+                const textarea = document.createElement('textarea');
+                textarea.value = obs.notes;
+                textarea.onchange = (e) => {
+                    obs.notes = e.target.value;
+                };
+                notesCell.appendChild(textarea);
+            });
+        }
+
+        function exportCSV() {
+            if (observations.length === 0) {
+                alert('No data to export. Please complete at least one interview first.');
+                return;
+            }
+
+            const headers = ['Floor', 'Area', 'Room', 'Ceilings', 'Walls', 'Floors', 'Samples', 'Mercury Fluorescent Lights', 'Notes'];
+            let csv = headers.join(',') + '\n';
+            
+            observations.forEach(obs => {
+                const row = [
+                    obs.floor, obs.area, obs.room, obs.ceilings, obs.walls,
+                    obs.floors, obs.samples, obs.mfl, obs.notes
+                ].map(cell => '"' + (cell || '').replace(/"/g, '""') + '"');
+                csv += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'observations_' + new Date().toISOString().slice(0, 10) + '.csv';
+            a.click();
+            
+            showSuccess('✅ Exported to CSV successfully!');
+        }
+
+        function downloadCSV() {
+            exportCSV();
+        }
+
+        function clearAll() {
+            if (observations.length === 0) return;
+            
+            if (confirm('Are you sure you want to clear all observations? This will also clear autosaved data.')) {
+                observations = [];
+                currentRow = 0;
+                currentQuestion = 0;
+                interviewActive = false;
+                isPaused = false;
+                speechSynthesis.cancel();
+                
+                // Clear autosave
+                try {
+                    localStorage.removeItem('observations_autosave');
+                    localStorage.removeItem('observations_manual_save');
+                } catch (error) {
+                    console.error('Error clearing storage:', error);
+                }
+                
+                document.getElementById('downloadBtn').style.display = 'none';
+                renderTable();
+                updateUI();
+                showSuccess('All data cleared');
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
